@@ -194,8 +194,9 @@ where
         // Reset the exit code global variable in case we run another test after this one
         // See https://github.com/uutils/coreutils/issues/5777
         uucore::error::set_exit_code(0);
-        io::stdout().flush().unwrap();
-        io::stderr().flush().unwrap();
+        // EPIPE here is expected after the reader hit CAPTURE_LIMIT and closed its end.
+        let _ = io::stdout().flush();
+        let _ = io::stderr().flush();
         unsafe {
             close(pipe_stdout_fds[1]);
             close(pipe_stderr_fds[1]);
@@ -244,9 +245,14 @@ where
     }
 }
 
+/// Output budget per run. Past this the pipe is closed so the util gets EPIPE and
+/// stops, bounding the cost of huge-output cases (`seq 1e30`). Requires SIGPIPE to be
+/// ignored when the fuzzer starts (uucore snapshots the disposition at load time).
+const CAPTURE_LIMIT: usize = 16 << 20;
+
 fn read_from_fd(fd: RawFd) -> String {
     let mut captured_output = Vec::new();
-    let mut read_buffer = [0; 1024];
+    let mut read_buffer = [0; 65536];
     loop {
         let bytes_read =
             unsafe { libc::read(fd, read_buffer.as_mut_ptr().cast(), read_buffer.len()) };
@@ -259,6 +265,10 @@ fn read_from_fd(fd: RawFd) -> String {
             break;
         }
         captured_output.extend_from_slice(&read_buffer[..bytes_read as usize]);
+        if captured_output.len() >= CAPTURE_LIMIT {
+            captured_output.extend_from_slice(b"\n[uufuzz: output truncated]\n");
+            break;
+        }
     }
 
     unsafe { libc::close(fd) };
