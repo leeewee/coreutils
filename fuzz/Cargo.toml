@@ -158,3 +158,9 @@ name = "fuzz_dirname"
 path = "fuzz_targets/fuzz_dirname.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "fuzz_probe"
+path = "fuzz_targets/fuzz_probe.rs"
+test = false
+doc = false

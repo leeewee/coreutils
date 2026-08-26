@@ -2,6 +2,7 @@
 //
 // For the full copyright and license information, please view the LICENSE
 // file that was distributed with this source code.
+#![cfg_attr(fuzzing, feature(alloc_error_hook))]
 
 use console::Style;
 use libc::STDIN_FILENO;
@@ -18,7 +19,7 @@ use std::io::{Seek, SeekFrom, Write};
 use std::os::fd::{AsRawFd, RawFd};
 use std::process::{Command, Stdio};
 use std::sync::atomic::Ordering;
-use std::sync::{Once, atomic::AtomicBool};
+use std::sync::{Once, OnceLock, atomic::AtomicBool};
 use std::{io, thread};
 
 pub mod pretty_print;
@@ -59,6 +60,43 @@ pub fn is_gnu_cmd(cmd_path: &str) -> Result<(), std::io::Error> {
     }
 }
 
+/// Real stdout/stderr, saved before any redirection so crash hooks can reach them.
+static ORIG_STD_FDS: OnceLock<(RawFd, RawFd)> = OnceLock::new();
+static CRASH_HOOKS: Once = Once::new();
+
+fn restore_std_fds() {
+    if let Some(&(out, err)) = ORIG_STD_FDS.get() {
+        unsafe {
+            dup2(out, STDOUT_FILENO);
+            dup2(err, STDERR_FILENO);
+        }
+    }
+}
+
+/// While `uumain` runs, fds 1/2 point at capture pipes, so a panic or allocation
+/// failure inside it would print into a pipe that dies with the process. These
+/// hooks put the real fds back first so the report (and libFuzzer's) is visible.
+fn install_crash_hooks() {
+    CRASH_HOOKS.call_once(|| {
+        let out = unsafe { dup(STDOUT_FILENO) };
+        let err = unsafe { dup(STDERR_FILENO) };
+        if out == -1 || err == -1 {
+            return;
+        }
+        let _ = ORIG_STD_FDS.set((out, err));
+        let prev = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |info| {
+            restore_std_fds();
+            prev(info);
+        }));
+        #[cfg(fuzzing)]
+        std::alloc::set_alloc_error_hook(|layout| {
+            restore_std_fds();
+            eprintln!("memory allocation of {} bytes failed", layout.size());
+        });
+    });
+}
+
 pub fn generate_and_run_uumain<F>(
     args: &[OsString],
     uumain_function: F,
@@ -67,6 +105,7 @@ pub fn generate_and_run_uumain<F>(
 where
     F: FnOnce(std::vec::IntoIter<OsString>) -> i32 + Send + 'static,
 {
+    install_crash_hooks();
     // Duplicate the stdout and stderr file descriptors
     let original_stdout_fd = unsafe { dup(STDOUT_FILENO) };
     let original_stderr_fd = unsafe { dup(STDERR_FILENO) };
