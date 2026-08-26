@@ -22,6 +22,7 @@ use std::sync::atomic::Ordering;
 use std::sync::{Once, OnceLock, atomic::AtomicBool};
 use std::{io, thread};
 
+pub mod generic;
 pub mod pretty_print;
 
 /// Represents the result of running a command, including its standard output,
@@ -108,6 +109,18 @@ pub fn generate_and_run_uumain<F>(
 where
     F: FnOnce(std::vec::IntoIter<OsString>) -> i32 + Send + 'static,
 {
+    generate_and_run_uumain_bytes(args, uumain_function, pipe_input.map(str::as_bytes))
+}
+
+/// Like [`generate_and_run_uumain`] but stdin may be arbitrary bytes.
+pub fn generate_and_run_uumain_bytes<F>(
+    args: &[OsString],
+    uumain_function: F,
+    pipe_input: Option<&[u8]>,
+) -> CommandResult
+where
+    F: FnOnce(std::vec::IntoIter<OsString>) -> i32 + Send + 'static,
+{
     install_crash_hooks();
     // Duplicate the stdout and stderr file descriptors
     let original_stdout_fd = unsafe { dup(STDOUT_FILENO) };
@@ -155,7 +168,7 @@ where
     let original_stdin_fd = if let Some(input_str) = pipe_input {
         // we have pipe input
         let mut input_file = tempfile::tempfile().unwrap();
-        write!(input_file, "{input_str}").unwrap();
+        input_file.write_all(input_str).unwrap();
         input_file.seek(SeekFrom::Start(0)).unwrap();
 
         // Redirect stdin to read from the in-memory file
