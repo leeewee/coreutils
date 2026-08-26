@@ -78,6 +78,9 @@ name = "arbitrary"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d036a3c4ab069c7b410a2ce876bd74808d2d0888a82667669f8e783a898bf1"
+dependencies = [
+ "derive_arbitrary",
+]
 
 [[package]]
 name = "arrayref"
@@ -503,6 +506,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ab67060fc6b8ef687992d439ca0fa36e7ed17e9a0b16b25b601e8757df720de"
 dependencies = [
  "data-encoding",
+ "syn",
+]
+
+[[package]]
+name = "derive_arbitrary"
+version = "1.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e567bd82dcff979e4b03460c307b3cdc9e96fde3d73bed1496d2bc75d9dd62a"
+dependencies = [
+ "proc-macro2",
+ "quote",
  "syn",
 ]
 
@@ -1977,6 +1991,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "uu_numfmt"
+version = "0.8.0"
+dependencies = [
+ "clap",
+ "fluent",
+ "memchr",
+ "thiserror",
+ "uucore",
+]
+
+[[package]]
 name = "uu_printf"
 version = "0.8.0"
 dependencies = [
@@ -2121,6 +2146,7 @@ dependencies = [
 name = "uucore-fuzz"
 version = "0.0.0"
 dependencies = [
+ "arbitrary",
  "libfuzzer-sys",
  "rand",
  "uu_cksum",
@@ -2130,6 +2156,7 @@ dependencies = [
  "uu_echo",
  "uu_env",
  "uu_expr",
+ "uu_numfmt",
  "uu_printf",
  "uu_seq",
  "uu_sort",

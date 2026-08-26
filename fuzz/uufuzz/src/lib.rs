@@ -78,6 +78,9 @@ fn restore_std_fds() {
 /// hooks put the real fds back first so the report (and libFuzzer's) is visible.
 fn install_crash_hooks() {
     CRASH_HOOKS.call_once(|| {
+        // libFuzzer owns main(), so Rust's runtime never ignored SIGPIPE; without this a
+        // GNU child that exits before reading its stdin kills the whole fuzzer.
+        unsafe { libc::signal(libc::SIGPIPE, libc::SIG_IGN) };
         let out = unsafe { dup(STDOUT_FILENO) };
         let err = unsafe { dup(STDERR_FILENO) };
         if out == -1 || err == -1 {
@@ -270,6 +273,9 @@ pub fn run_gnu_cmd(
         }
     }
 
+    // #[uucore::main] resets SIGPIPE to SIG_DFL on every uumain call; re-ignore it so a
+    // GNU child that exits before reading stdin yields EPIPE instead of killing the fuzzer.
+    unsafe { libc::signal(libc::SIGPIPE, libc::SIG_IGN) };
     let mut command = Command::new(cmd_path);
     for arg in args {
         command.arg(arg);
@@ -287,10 +293,8 @@ pub fn run_gnu_cmd(
             .stderr(Stdio::piped());
 
         let mut child = command.spawn().expect("Failed to execute command");
-        let child_stdin = child.stdin.as_mut().unwrap();
-        child_stdin
-            .write_all(input_str.as_bytes())
-            .expect("Failed to write to stdin");
+        // Ignore EPIPE: the child may legitimately exit before reading stdin.
+        let _ = child.stdin.take().unwrap().write_all(input_str.as_bytes());
 
         match child.wait_with_output() {
             Ok(output) => output,

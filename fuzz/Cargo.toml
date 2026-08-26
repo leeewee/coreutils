@@ -27,6 +27,7 @@ debug = true
 
 [dependencies]
 libfuzzer-sys = "0.4.7"
+arbitrary = { version = "1", features = ["derive"] }
 rand = { version = "0.10.1", features = ["std_rng"] }
 uufuzz = { path = "uufuzz" }
 uucore = { path = "../src/uucore", features = ["parser"] }
@@ -38,6 +39,7 @@ uu_echo = { path = "../src/uu/echo" }
 uu_seq = { path = "../src/uu/seq" }
 uu_sort = { path = "../src/uu/sort" }
 uu_wc = { path = "../src/uu/wc" }
+uu_numfmt = { path = "../src/uu/numfmt" }
 uu_cut = { path = "../src/uu/cut" }
 uu_split = { path = "../src/uu/split" }
 uu_tr = { path = "../src/uu/tr" }
@@ -162,5 +164,11 @@ doc = false
 [[bin]]
 name = "fuzz_probe"
 path = "fuzz_targets/fuzz_probe.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_numfmt"
+path = "fuzz_targets/fuzz_numfmt.rs"
 test = false
 doc = false
