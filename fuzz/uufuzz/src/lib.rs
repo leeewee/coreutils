@@ -365,7 +365,8 @@ pub fn compare_result(
             format!("Discrepancies detected: {}", discrepancies.join(", ")),
             Style::new().red(),
         );
-        if should_panic {
+        // UUFUZZ_PANIC_ONLY=1: log GNU discrepancies but only crash on real uumain panics.
+        if should_panic && std::env::var_os("UUFUZZ_PANIC_ONLY").is_none() {
             print_end_with_status(
                 format!("Test failed and will panic for: {test_type} {input}"),
                 false,
