@@ -278,259 +278,259 @@ path = "../src/uu/who"
 
 [[bin]]
 name = "gen_chcon"
-path = "fuzz_targets/gen_chcon.rs"
+path = "fuzz_targets/generic/gen_chcon.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_chmod"
-path = "fuzz_targets/gen_chmod.rs"
+path = "fuzz_targets/generic/gen_chmod.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_chown"
-path = "fuzz_targets/gen_chown.rs"
+path = "fuzz_targets/generic/gen_chown.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_chroot"
-path = "fuzz_targets/gen_chroot.rs"
+path = "fuzz_targets/generic/gen_chroot.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_cksum"
-path = "fuzz_targets/gen_cksum.rs"
+path = "fuzz_targets/generic/gen_cksum.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_cp"
-path = "fuzz_targets/gen_cp.rs"
+path = "fuzz_targets/generic/gen_cp.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_csplit"
-path = "fuzz_targets/gen_csplit.rs"
+path = "fuzz_targets/generic/gen_csplit.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_dd"
-path = "fuzz_targets/gen_dd.rs"
+path = "fuzz_targets/generic/gen_dd.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_df"
-path = "fuzz_targets/gen_df.rs"
+path = "fuzz_targets/generic/gen_df.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_dircolors"
-path = "fuzz_targets/gen_dircolors.rs"
+path = "fuzz_targets/generic/gen_dircolors.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_dirname"
-path = "fuzz_targets/gen_dirname.rs"
+path = "fuzz_targets/generic/gen_dirname.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_du"
-path = "fuzz_targets/gen_du.rs"
+path = "fuzz_targets/generic/gen_du.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_expand"
-path = "fuzz_targets/gen_expand.rs"
+path = "fuzz_targets/generic/gen_expand.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_expr"
-path = "fuzz_targets/gen_expr.rs"
+path = "fuzz_targets/generic/gen_expr.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_head"
-path = "fuzz_targets/gen_head.rs"
+path = "fuzz_targets/generic/gen_head.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_install"
-path = "fuzz_targets/gen_install.rs"
+path = "fuzz_targets/generic/gen_install.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_join"
-path = "fuzz_targets/gen_join.rs"
+path = "fuzz_targets/generic/gen_join.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_ln"
-path = "fuzz_targets/gen_ln.rs"
+path = "fuzz_targets/generic/gen_ln.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_ls"
-path = "fuzz_targets/gen_ls.rs"
+path = "fuzz_targets/generic/gen_ls.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_more"
-path = "fuzz_targets/gen_more.rs"
+path = "fuzz_targets/generic/gen_more.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_mv"
-path = "fuzz_targets/gen_mv.rs"
+path = "fuzz_targets/generic/gen_mv.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_nl"
-path = "fuzz_targets/gen_nl.rs"
+path = "fuzz_targets/generic/gen_nl.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_numfmt"
-path = "fuzz_targets/gen_numfmt.rs"
+path = "fuzz_targets/generic/gen_numfmt.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_od"
-path = "fuzz_targets/gen_od.rs"
+path = "fuzz_targets/generic/gen_od.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_pr"
-path = "fuzz_targets/gen_pr.rs"
+path = "fuzz_targets/generic/gen_pr.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_printf"
-path = "fuzz_targets/gen_printf.rs"
+path = "fuzz_targets/generic/gen_printf.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_ptx"
-path = "fuzz_targets/gen_ptx.rs"
+path = "fuzz_targets/generic/gen_ptx.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_rm"
-path = "fuzz_targets/gen_rm.rs"
+path = "fuzz_targets/generic/gen_rm.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_rmdir"
-path = "fuzz_targets/gen_rmdir.rs"
+path = "fuzz_targets/generic/gen_rmdir.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_runcon"
-path = "fuzz_targets/gen_runcon.rs"
+path = "fuzz_targets/generic/gen_runcon.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_seq"
-path = "fuzz_targets/gen_seq.rs"
+path = "fuzz_targets/generic/gen_seq.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_shuf"
-path = "fuzz_targets/gen_shuf.rs"
+path = "fuzz_targets/generic/gen_shuf.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_sort"
-path = "fuzz_targets/gen_sort.rs"
+path = "fuzz_targets/generic/gen_sort.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_split"
-path = "fuzz_targets/gen_split.rs"
+path = "fuzz_targets/generic/gen_split.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_stat"
-path = "fuzz_targets/gen_stat.rs"
+path = "fuzz_targets/generic/gen_stat.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_stty"
-path = "fuzz_targets/gen_stty.rs"
+path = "fuzz_targets/generic/gen_stty.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_tail"
-path = "fuzz_targets/gen_tail.rs"
+path = "fuzz_targets/generic/gen_tail.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_timeout"
-path = "fuzz_targets/gen_timeout.rs"
+path = "fuzz_targets/generic/gen_timeout.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_touch"
-path = "fuzz_targets/gen_touch.rs"
+path = "fuzz_targets/generic/gen_touch.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_tsort"
-path = "fuzz_targets/gen_tsort.rs"
+path = "fuzz_targets/generic/gen_tsort.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_unexpand"
-path = "fuzz_targets/gen_unexpand.rs"
+path = "fuzz_targets/generic/gen_unexpand.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_wc"
-path = "fuzz_targets/gen_wc.rs"
+path = "fuzz_targets/generic/gen_wc.rs"
 test = false
 doc = false
 
 [[bin]]
 name = "gen_who"
-path = "fuzz_targets/gen_who.rs"
+path = "fuzz_targets/generic/gen_who.rs"
 test = false
 doc = false
 
