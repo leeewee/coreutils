@@ -66,6 +66,15 @@ static ORIG_STD_FDS: OnceLock<(RawFd, RawFd)> = OnceLock::new();
 static CRASH_HOOKS: Once = Once::new();
 /// argv of the run in progress, for crash records.
 static CURRENT_ARGS: std::sync::Mutex<String> = std::sync::Mutex::new(String::new());
+/// True while uumain runs: only panics from there are recoverable.
+static IN_UUMAIN: AtomicBool = AtomicBool::new(false);
+
+/// UUFUZZ_CATCH_PANICS=1: panics/alloc failures inside uumain are recorded and swallowed
+/// instead of killing the process.
+fn catch_panics() -> bool {
+    static V: OnceLock<bool> = OnceLock::new();
+    *V.get_or_init(|| std::env::var_os("UUFUZZ_CATCH_PANICS").is_some())
+}
 
 fn json_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len() + 2);
@@ -133,13 +142,26 @@ fn install_crash_hooks() {
                 .or_else(|| info.payload().downcast_ref::<String>().cloned())
                 .unwrap_or_default();
             let (file, line) = info.location().map_or(("?", 0), |l| (l.file(), l.line()));
-            crash_record("panic", file, line, &msg);
-            prev(info);
+            // An alloc failure in catch mode arrives here as the panic raised by the alloc hook.
+            let kind = if msg.starts_with("memory allocation of ") { "alloc-fail" } else { "panic" };
+            crash_record(kind, file, line, &msg);
+            if catch_panics() && IN_UUMAIN.load(Ordering::Relaxed) {
+                // Recoverable: the panic unwinds to the catch_unwind around uumain and the
+                // fuzz loop continues (no abort, no restart, no corpus replay).
+                eprintln!("uufuzz: caught panic at {file}:{line}: {msg}");
+            } else {
+                prev(info);
+            }
         }));
         #[cfg(fuzzing)]
         std::alloc::set_alloc_error_hook(|layout| {
             restore_std_fds();
             eprintln!("memory allocation of {} bytes failed", layout.size());
+            if catch_panics() && IN_UUMAIN.load(Ordering::Relaxed) {
+                // Unwind instead of aborting (same mechanism as -Zoom=panic), so a huge
+                // allocation inside uumain is recoverable too.
+                std::panic::panic_any(format!("memory allocation of {} bytes failed", layout.size()));
+            }
             crash_record("alloc-fail", "", 0, &format!("{} bytes", layout.size()));
         });
     });
@@ -237,7 +259,15 @@ where
         let err = s.spawn(|| read_from_fd(pipe_stderr_fds[0]));
         #[allow(clippy::unnecessary_to_owned)]
         // TODO: clippy wants us to use args.iter().cloned() ?
-        let status = uumain_function(args.to_owned().into_iter());
+        IN_UUMAIN.store(true, Ordering::Relaxed);
+        let owned = args.to_owned();
+        let status = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(move || {
+            uumain_function(owned.into_iter())
+        })) {
+            Ok(status) => status,
+            Err(_) => 101, // panic recorded by the hook; continue like a `panic=unwind` exit
+        };
+        IN_UUMAIN.store(false, Ordering::Relaxed);
         // Reset the exit code global variable in case we run another test after this one
         // See https://github.com/uutils/coreutils/issues/5777
         uucore::error::set_exit_code(0);
