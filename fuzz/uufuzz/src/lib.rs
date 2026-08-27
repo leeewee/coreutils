@@ -64,6 +64,41 @@ pub fn is_gnu_cmd(cmd_path: &str) -> Result<(), std::io::Error> {
 /// Real stdout/stderr, saved before any redirection so crash hooks can reach them.
 static ORIG_STD_FDS: OnceLock<(RawFd, RawFd)> = OnceLock::new();
 static CRASH_HOOKS: Once = Once::new();
+/// argv of the run in progress, for crash records.
+static CURRENT_ARGS: std::sync::Mutex<String> = std::sync::Mutex::new(String::new());
+
+fn json_escape(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+/// Append one JSON record to $UUFUZZ_CRASH_LOG (if set). This is the durable crash
+/// channel: under `-fork -ignore_crashes` libFuzzer discards the child's log.
+fn crash_record(kind: &str, file: &str, line: u32, msg: &str) {
+    let Some(path) = std::env::var_os("UUFUZZ_CRASH_LOG") else {
+        return;
+    };
+    let argv = CURRENT_ARGS.lock().map(|g| g.clone()).unwrap_or_default();
+    let rec = format!(
+        "{{\"kind\":\"{kind}\",\"file\":\"{}\",\"line\":{line},\"msg\":\"{}\",\"argv\":\"{}\"}}\n",
+        json_escape(file),
+        json_escape(msg),
+        json_escape(&argv)
+    );
+    if let Ok(mut f) = std::fs::OpenOptions::new().append(true).create(true).open(path) {
+        let _ = f.write_all(rec.as_bytes());
+    }
+}
 
 fn restore_std_fds() {
     if let Some(&(out, err)) = ORIG_STD_FDS.get() {
@@ -91,12 +126,21 @@ fn install_crash_hooks() {
         let prev = std::panic::take_hook();
         std::panic::set_hook(Box::new(move |info| {
             restore_std_fds();
+            let msg = info
+                .payload()
+                .downcast_ref::<&str>()
+                .map(|s| s.to_string())
+                .or_else(|| info.payload().downcast_ref::<String>().cloned())
+                .unwrap_or_default();
+            let (file, line) = info.location().map_or(("?", 0), |l| (l.file(), l.line()));
+            crash_record("panic", file, line, &msg);
             prev(info);
         }));
         #[cfg(fuzzing)]
         std::alloc::set_alloc_error_hook(|layout| {
             restore_std_fds();
             eprintln!("memory allocation of {} bytes failed", layout.size());
+            crash_record("alloc-fail", "", 0, &format!("{} bytes", layout.size()));
         });
     });
 }
@@ -122,6 +166,9 @@ where
     F: FnOnce(std::vec::IntoIter<OsString>) -> i32 + Send + 'static,
 {
     install_crash_hooks();
+    if let Ok(mut g) = CURRENT_ARGS.lock() {
+        *g = format!("{args:?}");
+    }
     // Duplicate the stdout and stderr file descriptors
     let original_stdout_fd = unsafe { dup(STDOUT_FILENO) };
     let original_stderr_fd = unsafe { dup(STDERR_FILENO) };
