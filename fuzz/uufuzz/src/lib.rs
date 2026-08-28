@@ -91,6 +91,36 @@ fn json_escape(s: &str) -> String {
     out
 }
 
+fn is_first_party(file: &str) -> bool {
+    file.contains("/src/uu/") || file.contains("/src/uucore/") || file.contains("fuzz_targets/")
+}
+
+/// First first-party `file:line` on the current stack. Used when the panic location is
+/// in std (capacity overflow, allocation failure) so the record still names the util
+/// site. Symbolisation costs tens of ms, so only called for those cases.
+fn first_party_frame() -> Option<(String, u32)> {
+    let bt = std::backtrace::Backtrace::force_capture().to_string();
+    for l in bt.lines() {
+        let l = l.trim();
+        // "at /path/file.rs:LINE:COL" (or without :COL)
+        if let Some(rest) = l.strip_prefix("at ") {
+            let mut parts = rest.rsplitn(3, ':');
+            let a = parts.next();
+            let b = parts.next();
+            let c = parts.next();
+            let (file, ln) = match (a.and_then(|x| x.parse::<u32>().ok()), b.and_then(|x| x.parse::<u32>().ok())) {
+                (Some(_col), Some(line)) => (c.unwrap_or(""), line),
+                (Some(line), None) => (b.unwrap_or(""), line),
+                _ => continue,
+            };
+            if is_first_party(file) {
+                return Some((file.to_string(), ln));
+            }
+        }
+    }
+    None
+}
+
 /// Append one JSON record to $UUFUZZ_CRASH_LOG (if set). This is the durable crash
 /// channel: under `-fork -ignore_crashes` libFuzzer discards the child's log.
 fn crash_record(kind: &str, file: &str, line: u32, msg: &str) {
@@ -98,9 +128,15 @@ fn crash_record(kind: &str, file: &str, line: u32, msg: &str) {
         return;
     };
     let argv = CURRENT_ARGS.lock().map(|g| g.clone()).unwrap_or_default();
+    let (fp_file, fp_line) = if is_first_party(file) {
+        (file.to_string(), line)
+    } else {
+        first_party_frame().unwrap_or_default()
+    };
     let rec = format!(
-        "{{\"kind\":\"{kind}\",\"file\":\"{}\",\"line\":{line},\"msg\":\"{}\",\"argv\":\"{}\"}}\n",
+        "{{\"kind\":\"{kind}\",\"file\":\"{}\",\"line\":{line},\"fp_file\":\"{}\",\"fp_line\":{fp_line},\"msg\":\"{}\",\"argv\":\"{}\"}}\n",
         json_escape(file),
+        json_escape(&fp_file),
         json_escape(msg),
         json_escape(&argv)
     );
