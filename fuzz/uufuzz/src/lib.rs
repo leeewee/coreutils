@@ -291,8 +291,8 @@ where
     };
 
     let (uumain_exit_status, captured_stdout, captured_stderr) = thread::scope(|s| {
-        let out = s.spawn(|| read_from_fd(pipe_stdout_fds[0]));
-        let err = s.spawn(|| read_from_fd(pipe_stderr_fds[0]));
+        let out = s.spawn(|| read_from_fd(pipe_stdout_fds[0], true));
+        let err = s.spawn(|| read_from_fd(pipe_stderr_fds[0], false));
         #[allow(clippy::unnecessary_to_owned)]
         // TODO: clippy wants us to use args.iter().cloned() ?
         IN_UUMAIN.store(true, Ordering::Relaxed);
@@ -363,22 +363,22 @@ where
 /// ignored when the fuzzer starts (uucore snapshots the disposition at load time).
 const CAPTURE_LIMIT: usize = 16 << 20;
 
-fn read_from_fd(fd: RawFd) -> String {
+/// `cut_off`: stop reading at CAPTURE_LIMIT and close our end (the writer gets EPIPE).
+/// Used for stdout only; stderr is always drained to EOF (past the limit it is dropped),
+/// because a program never expects EPIPE on stderr and a dead reader would block it.
+/// Never prints: this runs while fds 1/2 are redirected.
+fn read_from_fd(fd: RawFd, cut_off: bool) -> String {
     let mut captured_output = Vec::new();
     let mut read_buffer = [0; 65536];
     loop {
         let bytes_read =
             unsafe { libc::read(fd, read_buffer.as_mut_ptr().cast(), read_buffer.len()) };
-
-        if bytes_read == -1 {
-            eprintln!("Failed to read from the pipe");
+        if bytes_read <= 0 {
             break;
         }
-        if bytes_read == 0 {
-            break;
-        }
-        captured_output.extend_from_slice(&read_buffer[..bytes_read as usize]);
-        if captured_output.len() >= CAPTURE_LIMIT {
+        if captured_output.len() < CAPTURE_LIMIT {
+            captured_output.extend_from_slice(&read_buffer[..bytes_read as usize]);
+        } else if cut_off {
             captured_output.extend_from_slice(b"\n[uufuzz: output truncated]\n");
             break;
         }

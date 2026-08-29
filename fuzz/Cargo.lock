@@ -2556,17 +2556,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "uu_chroot"
-version = "0.8.0"
-dependencies = [
- "clap",
- "fluent",
- "rustix",
- "thiserror 2.0.18",
- "uucore",
-]
-
-[[package]]
 name = "uu_cksum"
 version = "0.8.0"
 dependencies = [
@@ -2909,18 +2898,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "uu_runcon"
-version = "0.8.0"
-dependencies = [
- "clap",
- "fluent",
- "libc",
- "selinux",
- "thiserror 2.0.18",
- "uucore",
-]
-
-[[package]]
 name = "uu_seq"
 version = "0.8.0"
 dependencies = [
@@ -3024,17 +3001,6 @@ dependencies = [
  "fluent",
  "libc",
  "thiserror 2.0.18",
- "uucore",
-]
-
-[[package]]
-name = "uu_timeout"
-version = "0.8.0"
-dependencies = [
- "clap",
- "fluent",
- "libc",
- "nix",
  "uucore",
 ]
 
@@ -3150,7 +3116,6 @@ dependencies = [
  "procfs",
  "rustc-hash",
  "rustix",
- "selinux",
  "sha1",
  "sha2",
  "sha3",
@@ -3178,7 +3143,6 @@ dependencies = [
  "uu_chcon",
  "uu_chmod",
  "uu_chown",
- "uu_chroot",
  "uu_cksum",
  "uu_cp",
  "uu_csplit",
@@ -3208,7 +3172,6 @@ dependencies = [
  "uu_ptx",
  "uu_rm",
  "uu_rmdir",
- "uu_runcon",
  "uu_seq",
  "uu_shuf",
  "uu_sort",
@@ -3217,7 +3180,6 @@ dependencies = [
  "uu_stty",
  "uu_tail",
  "uu_test",
- "uu_timeout",
  "uu_touch",
  "uu_tr",
  "uu_tsort",

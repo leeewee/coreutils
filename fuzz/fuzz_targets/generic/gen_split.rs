@@ -10,7 +10,6 @@ static OPTS: &[OptSpec] = &[
     OptSpec { long: "lines", short: Some('l'), kind: Value },
     OptSpec { long: "number", short: Some('n'), kind: Value },
     OptSpec { long: "additional-suffix", short: None, kind: Value },
-    OptSpec { long: "filter", short: None, kind: Value },
     OptSpec { long: "elide-empty-files", short: Some('e'), kind: Flag },
     OptSpec { long: "", short: Some('d'), kind: Flag },
     OptSpec { long: "", short: Some('x'), kind: Flag },

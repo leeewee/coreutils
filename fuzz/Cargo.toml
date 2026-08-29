@@ -183,9 +183,6 @@ path = "../src/uu/chmod"
 [dependencies.uu_chown]
 path = "../src/uu/chown"
 
-[dependencies.uu_chroot]
-path = "../src/uu/chroot"
-
 [dependencies.uu_cp]
 path = "../src/uu/cp"
 
@@ -246,9 +243,6 @@ path = "../src/uu/rm"
 [dependencies.uu_rmdir]
 path = "../src/uu/rmdir"
 
-[dependencies.uu_runcon]
-path = "../src/uu/runcon"
-
 [dependencies.uu_shuf]
 path = "../src/uu/shuf"
 
@@ -260,9 +254,6 @@ path = "../src/uu/stty"
 
 [dependencies.uu_tail]
 path = "../src/uu/tail"
-
-[dependencies.uu_timeout]
-path = "../src/uu/timeout"
 
 [dependencies.uu_touch]
 path = "../src/uu/touch"
@@ -291,12 +282,6 @@ doc = false
 [[bin]]
 name = "gen_chown"
 path = "fuzz_targets/generic/gen_chown.rs"
-test = false
-doc = false
-
-[[bin]]
-name = "gen_chroot"
-path = "fuzz_targets/generic/gen_chroot.rs"
 test = false
 doc = false
 
@@ -451,12 +436,6 @@ test = false
 doc = false
 
 [[bin]]
-name = "gen_runcon"
-path = "fuzz_targets/generic/gen_runcon.rs"
-test = false
-doc = false
-
-[[bin]]
 name = "gen_seq"
 path = "fuzz_targets/generic/gen_seq.rs"
 test = false
@@ -495,12 +474,6 @@ doc = false
 [[bin]]
 name = "gen_tail"
 path = "fuzz_targets/generic/gen_tail.rs"
-test = false
-doc = false
-
-[[bin]]
-name = "gen_timeout"
-path = "fuzz_targets/generic/gen_timeout.rs"
 test = false
 doc = false
 
