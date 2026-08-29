@@ -22,6 +22,8 @@ pub enum ArgKind {
     Flag,
     Value,
     Optional,
+    /// dd-style `name=VALUE` operand (no dashes); `long` holds the name.
+    Operand,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -197,12 +199,22 @@ pub fn build_args(util: &str, opts: &[OptSpec], case: &Case) -> Vec<OsString> {
         }
         let o = opts[p.idx as usize % opts.len()];
         let val = sanitize(p.value.render(0));
+        if let ArgKind::Operand = o.kind {
+            let mut v = o.long.as_bytes().to_vec();
+            if p.mangle != 0 {
+                v.push(b'=');
+            }
+            v.extend(&val);
+            args.push(OsString::from_vec(v));
+            continue;
+        }
         let wants_value = match (o.kind, p.mangle) {
             (ArgKind::Value, 0) => false,
             (ArgKind::Flag, 1) => true,
             (ArgKind::Value, _) => true,
             (ArgKind::Optional, m) => m % 2 == 0,
             (ArgKind::Flag, _) => false,
+            (ArgKind::Operand, _) => unreachable!(),
         };
         let name = match (p.use_short, o.short) {
             (true, Some(c)) => format!("-{c}"),

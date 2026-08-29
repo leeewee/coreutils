@@ -61,8 +61,9 @@ pub fn is_gnu_cmd(cmd_path: &str) -> Result<(), std::io::Error> {
     }
 }
 
-/// Real stdout/stderr, saved before any redirection so crash hooks can reach them.
-static ORIG_STD_FDS: OnceLock<(RawFd, RawFd)> = OnceLock::new();
+/// Real stdin/stdout/stderr, saved (at fds >= 100, so a util that closes 0/1/2 cannot
+/// make a later dup() land there) before any redirection.
+static ORIG_STD_FDS: OnceLock<(RawFd, RawFd, RawFd)> = OnceLock::new();
 static CRASH_HOOKS: Once = Once::new();
 /// argv of the run in progress, for crash records.
 static CURRENT_ARGS: std::sync::Mutex<String> = std::sync::Mutex::new(String::new());
@@ -146,8 +147,9 @@ fn crash_record(kind: &str, file: &str, line: u32, msg: &str) {
 }
 
 fn restore_std_fds() {
-    if let Some(&(out, err)) = ORIG_STD_FDS.get() {
+    if let Some(&(inp, out, err)) = ORIG_STD_FDS.get() {
         unsafe {
+            dup2(inp, STDIN_FILENO);
             dup2(out, STDOUT_FILENO);
             dup2(err, STDERR_FILENO);
         }
@@ -162,12 +164,13 @@ fn install_crash_hooks() {
         // libFuzzer owns main(), so Rust's runtime never ignored SIGPIPE; without this a
         // GNU child that exits before reading its stdin kills the whole fuzzer.
         unsafe { libc::signal(libc::SIGPIPE, libc::SIG_IGN) };
-        let out = unsafe { dup(STDOUT_FILENO) };
-        let err = unsafe { dup(STDERR_FILENO) };
-        if out == -1 || err == -1 {
+        let inp = unsafe { libc::fcntl(STDIN_FILENO, libc::F_DUPFD_CLOEXEC, 100) };
+        let out = unsafe { libc::fcntl(STDOUT_FILENO, libc::F_DUPFD_CLOEXEC, 100) };
+        let err = unsafe { libc::fcntl(STDERR_FILENO, libc::F_DUPFD_CLOEXEC, 100) };
+        if inp == -1 || out == -1 || err == -1 {
             return;
         }
-        let _ = ORIG_STD_FDS.set((out, err));
+        let _ = ORIG_STD_FDS.set((inp, out, err));
         let prev = std::panic::take_hook();
         std::panic::set_hook(Box::new(move |info| {
             restore_std_fds();
@@ -224,12 +227,15 @@ where
     F: FnOnce(std::vec::IntoIter<OsString>) -> i32 + Send + 'static,
 {
     install_crash_hooks();
+    // Start every run from the real 0/1/2: the previous util may have closed them (dd wraps
+    // them in File::from_raw_fd), which would otherwise derail the dup()/pipe() bookkeeping.
+    restore_std_fds();
     if let Ok(mut g) = CURRENT_ARGS.lock() {
         *g = format!("{args:?}");
     }
     // Duplicate the stdout and stderr file descriptors
-    let original_stdout_fd = unsafe { dup(STDOUT_FILENO) };
-    let original_stderr_fd = unsafe { dup(STDERR_FILENO) };
+    let original_stdout_fd = unsafe { libc::fcntl(STDOUT_FILENO, libc::F_DUPFD_CLOEXEC, 100) };
+    let original_stderr_fd = unsafe { libc::fcntl(STDERR_FILENO, libc::F_DUPFD_CLOEXEC, 100) };
     if original_stdout_fd == -1 || original_stderr_fd == -1 {
         return CommandResult {
             stdout: "".to_string(),
@@ -277,7 +283,7 @@ where
         input_file.seek(SeekFrom::Start(0)).unwrap();
 
         // Redirect stdin to read from the in-memory file
-        let original_stdin_fd = unsafe { dup(STDIN_FILENO) };
+        let original_stdin_fd = unsafe { libc::fcntl(STDIN_FILENO, libc::F_DUPFD_CLOEXEC, 100) };
         if original_stdin_fd == -1 || unsafe { dup2(input_file.as_raw_fd(), STDIN_FILENO) } == -1 {
             return CommandResult {
                 stdout: "".to_string(),

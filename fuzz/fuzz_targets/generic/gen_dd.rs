@@ -5,6 +5,21 @@ use libfuzzer_sys::fuzz_target;
 use uufuzz::generic::{ArgKind::*, Case, OptSpec, run};
 
 static OPTS: &[OptSpec] = &[
+    OptSpec { long: "bs", short: None, kind: Operand },
+    OptSpec { long: "cbs", short: None, kind: Operand },
+    OptSpec { long: "conv", short: None, kind: Operand },
+    OptSpec { long: "count", short: None, kind: Operand },
+    OptSpec { long: "ibs", short: None, kind: Operand },
+    OptSpec { long: "if", short: None, kind: Operand },
+    OptSpec { long: "iflag", short: None, kind: Operand },
+    OptSpec { long: "skip", short: None, kind: Operand },
+    OptSpec { long: "iseek", short: None, kind: Operand },
+    OptSpec { long: "obs", short: None, kind: Operand },
+    OptSpec { long: "of", short: None, kind: Operand },
+    OptSpec { long: "oflag", short: None, kind: Operand },
+    OptSpec { long: "seek", short: None, kind: Operand },
+    OptSpec { long: "oseek", short: None, kind: Operand },
+    OptSpec { long: "status", short: None, kind: Operand },
 ];
 
 fuzz_target!(|case: Case| {
