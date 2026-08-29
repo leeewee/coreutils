@@ -163,7 +163,12 @@ pub fn sanitize(mut v: Vec<u8>) -> Vec<u8> {
         v = v.iter().map(|&b| if b == b'.' { b'_' } else { b }).collect();
     }
     if v.first() == Some(&b'/') && !POOL.iter().any(|p| p.as_bytes() == v.as_slice()) {
-        v.remove(0);
+        // strip *all* leading slashes: "//" must not become "/"
+        let n = v.iter().take_while(|&&b| b == b'/').count();
+        v.drain(..n);
+    }
+    if v == b"." || v == b".." || v == b"~" {
+        v.push(b'_');
     }
     v
 }
