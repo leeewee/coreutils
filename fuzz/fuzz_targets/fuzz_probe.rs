@@ -7,6 +7,7 @@ fn fake_uumain(_a: std::vec::IntoIter<OsString>) -> i32 {
         Ok("panic") => panic!("probe explicit panic"),
         Ok("cap") => { let v: Vec<u8> = Vec::with_capacity(usize::MAX); v.len() as i32 }
         Ok("oom") => { let v = vec![1u8; 1usize << 40]; v.len() as i32 }
+        Ok("hang") => { std::thread::sleep(std::time::Duration::from_secs(60)); 0 }
         Ok("alloc") => { let v: Vec<u8> = std::hint::black_box(Vec::with_capacity(1usize << 42)); std::hint::black_box(&v); v.capacity() as i32 }
         _ => 0,
     }

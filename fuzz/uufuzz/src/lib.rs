@@ -6,7 +6,7 @@
 
 use console::Style;
 use libc::STDIN_FILENO;
-use libc::{STDERR_FILENO, STDOUT_FILENO, close, dup, dup2, pipe};
+use libc::{STDERR_FILENO, STDOUT_FILENO, close, dup2, pipe};
 use pretty_print::{
     print_diff, print_end_with_status, print_or_empty, print_section, print_with_style,
 };
@@ -69,6 +69,47 @@ static CRASH_HOOKS: Once = Once::new();
 static CURRENT_ARGS: std::sync::Mutex<String> = std::sync::Mutex::new(String::new());
 /// True while uumain runs: only panics from there are recoverable.
 static IN_UUMAIN: AtomicBool = AtomicBool::new(false);
+/// Monotonic start time (seconds) of the run in progress, 0 when idle.
+static RUN_START: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+/// Pre-formatted hang record for the run in progress, written by the watchdog without
+/// allocating (the main thread may be inside the allocator holding its lock).
+static HANG_RECORD: std::sync::Mutex<Vec<u8>> = std::sync::Mutex::new(Vec::new());
+static CRASH_LOG_PATH: OnceLock<std::ffi::CString> = OnceLock::new();
+
+fn mono_secs() -> u64 {
+    let mut ts = libc::timespec { tv_sec: 0, tv_nsec: 0 };
+    unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut ts) };
+    ts.tv_sec as u64
+}
+
+/// Per-run timeout replacing libFuzzer's -timeout: libFuzzer's alarm handler allocates
+/// inside a signal handler and deadlocks if the alarm lands while the interrupted frame
+/// holds ASan's allocator lock. This thread only uses async-safe calls.
+fn start_hang_watchdog(limit: u64) {
+    std::thread::spawn(move || {
+        loop {
+            unsafe { libc::sleep(1) };
+            let start = RUN_START.load(std::sync::atomic::Ordering::Relaxed);
+            if start != 0 && mono_secs().saturating_sub(start) > limit {
+                restore_std_fds();
+                let msg = b"uufuzz: hang: run exceeded the per-run time limit\n";
+                unsafe { libc::write(STDERR_FILENO, msg.as_ptr().cast(), msg.len()) };
+                if let (Some(path), Ok(rec)) = (CRASH_LOG_PATH.get(), HANG_RECORD.try_lock()) {
+                    let fd = unsafe {
+                        libc::open(path.as_ptr(), libc::O_WRONLY | libc::O_APPEND | libc::O_CREAT, 0o644)
+                    };
+                    if fd >= 0 {
+                        unsafe {
+                            libc::write(fd, rec.as_ptr().cast(), rec.len());
+                            libc::close(fd);
+                        }
+                    }
+                }
+                unsafe { libc::_exit(70) };
+            }
+        }
+    });
+}
 
 /// UUFUZZ_CATCH_PANICS=1: panics/alloc failures inside uumain are recorded and swallowed
 /// instead of killing the process.
@@ -192,6 +233,13 @@ fn install_crash_hooks() {
                 prev(info);
             }
         }));
+        if let Some(p) = std::env::var_os("UUFUZZ_CRASH_LOG") {
+            use std::os::unix::ffi::OsStrExt;
+            let _ = CRASH_LOG_PATH.set(std::ffi::CString::new(p.as_bytes()).unwrap_or_default());
+        }
+        if let Some(secs) = std::env::var("UUFUZZ_HANG_SECS").ok().and_then(|v| v.parse().ok()) {
+            start_hang_watchdog(secs);
+        }
         #[cfg(fuzzing)]
         std::alloc::set_alloc_error_hook(|layout| {
             restore_std_fds();
@@ -230,9 +278,18 @@ where
     // Start every run from the real 0/1/2: the previous util may have closed them (dd wraps
     // them in File::from_raw_fd), which would otherwise derail the dup()/pipe() bookkeeping.
     restore_std_fds();
-    if let Ok(mut g) = CURRENT_ARGS.lock() {
-        *g = format!("{args:?}");
+    let argv = format!("{args:?}");
+    if let Ok(mut g) = HANG_RECORD.lock() {
+        *g = format!(
+            "{{\"kind\":\"hang\",\"file\":\"\",\"line\":0,\"fp_file\":\"\",\"fp_line\":0,\"msg\":\"run exceeded the per-run time limit\",\"argv\":\"{}\"}}\n",
+            json_escape(&argv)
+        )
+        .into_bytes();
     }
+    if let Ok(mut g) = CURRENT_ARGS.lock() {
+        *g = argv;
+    }
+    RUN_START.store(mono_secs(), std::sync::atomic::Ordering::Relaxed);
     // Duplicate the stdout and stderr file descriptors
     let original_stdout_fd = unsafe { libc::fcntl(STDOUT_FILENO, libc::F_DUPFD_CLOEXEC, 100) };
     let original_stderr_fd = unsafe { libc::fcntl(STDERR_FILENO, libc::F_DUPFD_CLOEXEC, 100) };
@@ -310,6 +367,7 @@ where
             Err(_) => 101, // panic recorded by the hook; continue like a `panic=unwind` exit
         };
         IN_UUMAIN.store(false, Ordering::Relaxed);
+        RUN_START.store(0, std::sync::atomic::Ordering::Relaxed);
         // Reset the exit code global variable in case we run another test after this one
         // See https://github.com/uutils/coreutils/issues/5777
         uucore::error::set_exit_code(0);
