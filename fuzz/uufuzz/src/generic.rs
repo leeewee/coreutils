@@ -185,13 +185,16 @@ fn reset_scratch(content: &[u8]) {
     unsafe {
         libc::chmod(c".".as_ptr(), 0o700);
     }
+    // Wipe everything the previous run left behind (a util may create files under any
+    // name, e.g. `cp /dev/full 0`), not just our own scratch names.
+    if let Ok(entries) = std::fs::read_dir(".") {
+        for e in entries.flatten() {
+            let _ = std::fs::remove_dir_all(e.path()).or_else(|_| std::fs::remove_file(e.path()));
+        }
+    }
     for f in SCRATCH_FILES {
-        let _ = std::fs::remove_file(f);
-        let _ = std::fs::remove_dir_all(f);
         let _ = std::fs::write(f, content);
     }
-    let _ = std::fs::remove_dir_all(SCRATCH_DIR);
-    let _ = std::fs::remove_file(SCRATCH_DIR);
     let _ = std::fs::create_dir(SCRATCH_DIR);
     let _ = std::fs::write(Path::new(SCRATCH_DIR).join("f0"), content);
 }
