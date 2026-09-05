@@ -113,6 +113,11 @@ impl<'a> ErrorFormatter<'a> {
     {
         let code = self.print_error(err, exit_code);
         callback();
+        // Under the fuzzing harness a usage error must not end the process: unwind with a
+        // marker instead; the harness's panic hook swallows it silently.
+        if std::env::var_os("UUFUZZ_CATCH_PANICS").is_some() {
+            std::panic::panic_any(format!("uufuzz-usage-exit:{code}"));
+        }
         std::process::exit(code);
     }
 

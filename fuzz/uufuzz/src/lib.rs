@@ -221,6 +221,10 @@ fn install_crash_hooks() {
                 .map(|s| s.to_string())
                 .or_else(|| info.payload().downcast_ref::<String>().cloned())
                 .unwrap_or_default();
+            if msg.starts_with("uufuzz-usage-exit:") {
+                // a clap usage error rerouted from process::exit; end the run silently
+                return;
+            }
             let (file, line) = info.location().map_or(("?", 0), |l| (l.file(), l.line()));
             // An alloc failure in catch mode arrives here as the panic raised by the alloc hook.
             let kind = if msg.starts_with("memory allocation of ") { "alloc-fail" } else { "panic" };
