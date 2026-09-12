@@ -195,14 +195,44 @@ path = "../src/uu/basenc"
 [dependencies.uu_cat]
 path = "../src/uu/cat"
 
+[dependencies.uu_chcon]
+path = "../src/uu/chcon"
+
 [dependencies.uu_chgrp]
 path = "../src/uu/chgrp"
+
+[dependencies.uu_chmod]
+path = "../src/uu/chmod"
+
+[dependencies.uu_chown]
+path = "../src/uu/chown"
 
 [dependencies.uu_comm]
 path = "../src/uu/comm"
 
+[dependencies.uu_cp]
+path = "../src/uu/cp"
+
+[dependencies.uu_csplit]
+path = "../src/uu/csplit"
+
+[dependencies.uu_dd]
+path = "../src/uu/dd"
+
+[dependencies.uu_df]
+path = "../src/uu/df"
+
 [dependencies.uu_dir]
 path = "../src/uu/dir"
+
+[dependencies.uu_dircolors]
+path = "../src/uu/dircolors"
+
+[dependencies.uu_du]
+path = "../src/uu/du"
+
+[dependencies.uu_expand]
+path = "../src/uu/expand"
 
 [dependencies.uu_factor]
 path = "../src/uu/factor"
@@ -219,6 +249,9 @@ path = "../src/uu/fold"
 [dependencies.uu_groups]
 path = "../src/uu/groups"
 
+[dependencies.uu_head]
+path = "../src/uu/head"
+
 [dependencies.uu_hostid]
 path = "../src/uu/hostid"
 
@@ -228,11 +261,23 @@ path = "../src/uu/hostname"
 [dependencies.uu_id]
 path = "../src/uu/id"
 
+[dependencies.uu_install]
+path = "../src/uu/install"
+
+[dependencies.uu_join]
+path = "../src/uu/join"
+
 [dependencies.uu_link]
 path = "../src/uu/link"
 
+[dependencies.uu_ln]
+path = "../src/uu/ln"
+
 [dependencies.uu_logname]
 path = "../src/uu/logname"
+
+[dependencies.uu_ls]
+path = "../src/uu/ls"
 
 [dependencies.uu_md5sum]
 path = "../src/uu/md5sum"
@@ -249,8 +294,20 @@ path = "../src/uu/mknod"
 [dependencies.uu_mktemp]
 path = "../src/uu/mktemp"
 
+[dependencies.uu_more]
+path = "../src/uu/more"
+
+[dependencies.uu_mv]
+path = "../src/uu/mv"
+
+[dependencies.uu_nl]
+path = "../src/uu/nl"
+
 [dependencies.uu_nproc]
 path = "../src/uu/nproc"
+
+[dependencies.uu_od]
+path = "../src/uu/od"
 
 [dependencies.uu_paste]
 path = "../src/uu/paste"
@@ -261,8 +318,14 @@ path = "../src/uu/pathchk"
 [dependencies.uu_pinky]
 path = "../src/uu/pinky"
 
+[dependencies.uu_pr]
+path = "../src/uu/pr"
+
 [dependencies.uu_printenv]
 path = "../src/uu/printenv"
+
+[dependencies.uu_ptx]
+path = "../src/uu/ptx"
 
 [dependencies.uu_pwd]
 path = "../src/uu/pwd"
@@ -272,6 +335,12 @@ path = "../src/uu/readlink"
 
 [dependencies.uu_realpath]
 path = "../src/uu/realpath"
+
+[dependencies.uu_rm]
+path = "../src/uu/rm"
+
+[dependencies.uu_rmdir]
+path = "../src/uu/rmdir"
 
 [dependencies.uu_sha1sum]
 path = "../src/uu/sha1sum"
@@ -291,11 +360,26 @@ path = "../src/uu/sha512sum"
 [dependencies.uu_shred]
 path = "../src/uu/shred"
 
+[dependencies.uu_shuf]
+path = "../src/uu/shuf"
+
+[dependencies.uu_stat]
+path = "../src/uu/stat"
+
+[dependencies.uu_stty]
+path = "../src/uu/stty"
+
 [dependencies.uu_sum]
 path = "../src/uu/sum"
 
 [dependencies.uu_tac]
 path = "../src/uu/tac"
+
+[dependencies.uu_tail]
+path = "../src/uu/tail"
+
+[dependencies.uu_touch]
+path = "../src/uu/touch"
 
 [dependencies.uu_true]
 path = "../src/uu/true"
@@ -303,11 +387,17 @@ path = "../src/uu/true"
 [dependencies.uu_truncate]
 path = "../src/uu/truncate"
 
+[dependencies.uu_tsort]
+path = "../src/uu/tsort"
+
 [dependencies.uu_tty]
 path = "../src/uu/tty"
 
 [dependencies.uu_uname]
 path = "../src/uu/uname"
+
+[dependencies.uu_unexpand]
+path = "../src/uu/unexpand"
 
 [dependencies.uu_uniq]
 path = "../src/uu/uniq"
@@ -323,6 +413,9 @@ path = "../src/uu/users"
 
 [dependencies.uu_vdir]
 path = "../src/uu/vdir"
+
+[dependencies.uu_who]
+path = "../src/uu/who"
 
 [dependencies.uu_whoami]
 path = "../src/uu/whoami"
@@ -370,14 +463,50 @@ test = false
 doc = false
 
 [[bin]]
+name = "gen_chcon"
+path = "fuzz_targets/generic/gen_chcon.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_chgrp"
 path = "fuzz_targets/generic/gen_chgrp.rs"
 test = false
 doc = false
 
 [[bin]]
+name = "gen_chmod"
+path = "fuzz_targets/generic/gen_chmod.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_chown"
+path = "fuzz_targets/generic/gen_chown.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_cksum"
+path = "fuzz_targets/generic/gen_cksum.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_comm"
 path = "fuzz_targets/generic/gen_comm.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_cp"
+path = "fuzz_targets/generic/gen_cp.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_csplit"
+path = "fuzz_targets/generic/gen_csplit.rs"
 test = false
 doc = false
 
@@ -394,14 +523,56 @@ test = false
 doc = false
 
 [[bin]]
+name = "gen_dd"
+path = "fuzz_targets/generic/gen_dd.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_df"
+path = "fuzz_targets/generic/gen_df.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_dir"
 path = "fuzz_targets/generic/gen_dir.rs"
 test = false
 doc = false
 
 [[bin]]
+name = "gen_dircolors"
+path = "fuzz_targets/generic/gen_dircolors.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_dirname"
+path = "fuzz_targets/generic/gen_dirname.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_du"
+path = "fuzz_targets/generic/gen_du.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_echo"
 path = "fuzz_targets/generic/gen_echo.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_expand"
+path = "fuzz_targets/generic/gen_expand.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_expr"
+path = "fuzz_targets/generic/gen_expr.rs"
 test = false
 doc = false
 
@@ -436,6 +607,12 @@ test = false
 doc = false
 
 [[bin]]
+name = "gen_head"
+path = "fuzz_targets/generic/gen_head.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_hostid"
 path = "fuzz_targets/generic/gen_hostid.rs"
 test = false
@@ -454,14 +631,38 @@ test = false
 doc = false
 
 [[bin]]
+name = "gen_install"
+path = "fuzz_targets/generic/gen_install.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_join"
+path = "fuzz_targets/generic/gen_join.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_link"
 path = "fuzz_targets/generic/gen_link.rs"
 test = false
 doc = false
 
 [[bin]]
+name = "gen_ln"
+path = "fuzz_targets/generic/gen_ln.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_logname"
 path = "fuzz_targets/generic/gen_logname.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_ls"
+path = "fuzz_targets/generic/gen_ls.rs"
 test = false
 doc = false
 
@@ -496,8 +697,38 @@ test = false
 doc = false
 
 [[bin]]
+name = "gen_more"
+path = "fuzz_targets/generic/gen_more.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_mv"
+path = "fuzz_targets/generic/gen_mv.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_nl"
+path = "fuzz_targets/generic/gen_nl.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_nproc"
 path = "fuzz_targets/generic/gen_nproc.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_numfmt"
+path = "fuzz_targets/generic/gen_numfmt.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_od"
+path = "fuzz_targets/generic/gen_od.rs"
 test = false
 doc = false
 
@@ -520,8 +751,26 @@ test = false
 doc = false
 
 [[bin]]
+name = "gen_pr"
+path = "fuzz_targets/generic/gen_pr.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_printenv"
 path = "fuzz_targets/generic/gen_printenv.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_printf"
+path = "fuzz_targets/generic/gen_printf.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_ptx"
+path = "fuzz_targets/generic/gen_ptx.rs"
 test = false
 doc = false
 
@@ -540,6 +789,24 @@ doc = false
 [[bin]]
 name = "gen_realpath"
 path = "fuzz_targets/generic/gen_realpath.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_rm"
+path = "fuzz_targets/generic/gen_rm.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_rmdir"
+path = "fuzz_targets/generic/gen_rmdir.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_seq"
+path = "fuzz_targets/generic/gen_seq.rs"
 test = false
 doc = false
 
@@ -580,6 +847,36 @@ test = false
 doc = false
 
 [[bin]]
+name = "gen_shuf"
+path = "fuzz_targets/generic/gen_shuf.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_sort"
+path = "fuzz_targets/generic/gen_sort.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_split"
+path = "fuzz_targets/generic/gen_split.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_stat"
+path = "fuzz_targets/generic/gen_stat.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_stty"
+path = "fuzz_targets/generic/gen_stty.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_sum"
 path = "fuzz_targets/generic/gen_sum.rs"
 test = false
@@ -588,6 +885,18 @@ doc = false
 [[bin]]
 name = "gen_tac"
 path = "fuzz_targets/generic/gen_tac.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_tail"
+path = "fuzz_targets/generic/gen_tail.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_touch"
+path = "fuzz_targets/generic/gen_touch.rs"
 test = false
 doc = false
 
@@ -610,6 +919,12 @@ test = false
 doc = false
 
 [[bin]]
+name = "gen_tsort"
+path = "fuzz_targets/generic/gen_tsort.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "gen_tty"
 path = "fuzz_targets/generic/gen_tty.rs"
 test = false
@@ -618,6 +933,12 @@ doc = false
 [[bin]]
 name = "gen_uname"
 path = "fuzz_targets/generic/gen_uname.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_unexpand"
+path = "fuzz_targets/generic/gen_unexpand.rs"
 test = false
 doc = false
 
@@ -648,6 +969,18 @@ doc = false
 [[bin]]
 name = "gen_vdir"
 path = "fuzz_targets/generic/gen_vdir.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_wc"
+path = "fuzz_targets/generic/gen_wc.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "gen_who"
+path = "fuzz_targets/generic/gen_who.rs"
 test = false
 doc = false
 
